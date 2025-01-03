@@ -1,0 +1,33 @@
+apiVersion: v2
+name: payment-app
+description: A Helm chart for Payment Application Stack
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+keywords:
+  - payment
+  - auth
+maintainers:
+  - name: Akshay
+    email: akshay.kumar@keyshell.net
+dependencies:
+  - name: kibana
+    version: "10.4.1"
+    repository: https://charts.bitnami.com/bitnami
+    condition: kibana.enabled
+  - name: mongodb
+    version: "12.1.31"
+    repository: https://charts.bitnami.com/bitnami
+    condition: mongodb.enabled
+  - name: redis
+    version: "17.11.3"
+    repository: https://charts.bitnami.com/bitnami
+    condition: redis.enabled
+  - name: elasticsearch
+    version: "19.8.1"
+    repository: https://charts.bitnami.com/bitnami
+    condition: elasticsearch.enabled
+  - name: logstash
+    version: "5.4.3"
+    repository: https://charts.bitnami.com/bitnami
+    condition: logstash.enabled

@@ -1,0 +1,37 @@
+# Deployment configuration for payment Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "payment-app.fullname" . }}-payment
+  labels:
+    {{- include "payment-app.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.payment.replicas | default 1 }}
+  selector:
+    matchLabels:
+      app: payment-service
+  template:
+    metadata:
+      labels:
+        app: payment-service
+    spec:
+      containers:
+      - name: payment-service
+        image: "{{ .Values.payment.image.repository }}:{{ .Values.payment.image.tag }}"
+        imagePullPolicy: {{ .Values.payment.image.pullPolicy }}
+        ports:
+        - containerPort: 8000
+        envFrom:
+        - configMapRef:
+            name: {{ include "payment-app.fullname" . }}-config
+        volumeMounts:
+        - name: common-code
+          mountPath: /app/common
+        resources:
+          {{- toYaml .Values.payment.resources | nindent 12 }}
+      volumes:
+        - name: common-code
+          configMap:
+            name: {{ include "payment-app.fullname" . }}-common-code
+
+      

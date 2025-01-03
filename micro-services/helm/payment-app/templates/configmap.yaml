@@ -1,0 +1,11 @@
+# Stores non-sensitive configuration data
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "payment-app.fullname" . }}-config
+  labels:
+    {{- include "payment-app.labels" . | nindent 4 }}
+data:
+  MONGODB_URI: mongodb://{{ .Release.Name }}-mongodb:27017/payment_app
+  ELASTICSEARCH_HOST: {{ .Release.Name }}-elasticsearch
+  NODE_ENV: {{ .Values.global.environment }}

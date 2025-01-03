@@ -1,0 +1,157 @@
+# Global values
+global:
+  environment: development
+  imageRegistry: ""
+  imagePullSecrets: []
+
+nameOverride: ""
+fullnameOverride: ""
+# Common configurations
+common:
+  labels:
+    app: payment-app
+  annotations: {}
+
+# Service-specific configurations
+auth:
+  enabled: true
+  name: auth-service
+  jwtSecret: "your-secret-key-here" 
+  image:
+    repository: auth-service
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 8000
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+  env:
+    MONGODB_URI: "mongodb://mongodb:27017/payment_app"
+
+payment:
+  enabled: true
+  name: payment-service
+  image:
+    repository: payment-service
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 8000
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+  env:
+    MONGODB_URI: "mongodb://mongodb:27017/payment_app"
+
+
+frontend:
+  enabled: true
+  name: frontend
+  image:
+    repository: frontend
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 80
+
+# Dependencies configurations
+mongodb:
+  enabled: true
+  auth:
+    enabled: false
+  persistence:
+    enabled: true
+    size: 1Gi
+
+redis:
+  enabled: true
+  auth:
+    enabled: false
+  persistence:
+    enabled: true
+    size: 1Gi
+
+elasticsearch:
+  enabled: true
+  master:
+    persistence:
+      enabled: true
+      size: 1Gi
+  env:
+    - name: discovery.type
+      value: single-node
+    - name: ES_JAVA_OPTS
+      value: "-Xms512m -Xmx512m"
+
+kibana:
+  enabled: true
+  elasticsearch:
+    hosts: ["elasticsearch:9200"]
+  service:
+    type: ClusterIP
+    port: 5601
+
+logstash:
+  enabled: true
+  service:
+    type: ClusterIP
+    port: 5044
+  persistence:
+    enabled: true
+    size: 1Gi
+  # Configure Logstash pipeline
+  configuration: |
+    input {
+      beats {
+        port => 5044
+      }
+    }
+    filter {
+      grok {
+        match => { "message" => "%{COMBINEDAPACHELOG}" }
+      }
+    }
+    output {
+      elasticsearch {
+        hosts => ["${ELASTICSEARCH_HOST}:9200"]
+        index => "%{[@metadata][beat]}-%{[@metadata][version]}-%{+YYYY.MM.dd}"
+      }
+    }
+  # Configure Logstash settings
+  extraEnvVars:
+    - name: ELASTICSEARCH_HOST
+      value: "elasticsearch"
+
+# Ingress configuration
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+  hosts:
+    - host: localhost
+      paths:
+        - path: /api/auth(/|$)(.*)
+          pathType: Prefix
+          service: auth
+          port: 8000
+        - path: /api/payment(/|$)(.*)
+          pathType: Prefix
+          service: payment
+          port: 8000
+        - path: /(.*)
+          pathType: Prefix
+          service: frontend
+          port: 80

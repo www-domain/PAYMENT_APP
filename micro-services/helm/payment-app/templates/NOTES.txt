@@ -1,0 +1,22 @@
+Thank you for installing {{ .Chart.Name }}.
+
+Your release is named {{ .Release.Name }}.
+
+To get the application URL, run:
+{{- if .Values.ingress.enabled }}
+  http://{{ (index .Values.ingress.hosts 0).host }}
+{{- else }}
+  export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "payment-app.name" . }},app.kubernetes.io/instance={{ .Release.Name }}" -o jsonpath="{.items[0].metadata.name}")
+  export CONTAINER_PORT=$(kubectl get pod --namespace {{ .Release.Namespace }} $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
+  echo "Visit http://127.0.0.1:8080 to use your application"
+  kubectl --namespace {{ .Release.Namespace }} port-forward $POD_NAME 8080:$CONTAINER_PORT
+{{- end }}
+
+Services available:
+1. Frontend: http://{{ (index .Values.ingress.hosts 0).host }}
+2. Auth Service: http://{{ (index .Values.ingress.hosts 0).host }}/api/auth
+3. Payment Service: http://{{ (index .Values.ingress.hosts 0).host }}/api/payment
+4. Kibana: http://kibana.{{ (index .Values.ingress.hosts 0).host }}
+
+To verify the deployment:
+  kubectl get pods -l "app.kubernetes.io/instance={{ .Release.Name }}"

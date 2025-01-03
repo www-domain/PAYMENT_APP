@@ -1,0 +1,16 @@
+# Service to expose payment service
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "payment-app.fullname" . }}-payment
+  labels:
+    {{- include "payment-app.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.payment.service.type }}
+  ports:
+    - port: {{ .Values.payment.service.port }}
+      targetPort: 8000
+      protocol: TCP
+      name: http
+  selector:
+    app: payment-service

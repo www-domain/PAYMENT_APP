@@ -1,0 +1,25 @@
+# Deployment configuration for fronend Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "payment-app.fullname" . }}-frontend
+  labels:
+    {{- include "payment-app.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.frontend.replicas | default 1 }}
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: "{{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag }}"
+        imagePullPolicy: {{ .Values.frontend.image.pullPolicy }}
+        ports:
+        - containerPort: 80
+        resources:
+          {{- toYaml .Values.frontend.resources | nindent 12 }}

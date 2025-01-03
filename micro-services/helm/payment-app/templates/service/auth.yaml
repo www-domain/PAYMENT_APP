@@ -1,0 +1,16 @@
+# Service to expose Auth Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "payment-app.fullname" . }}-auth
+  labels:
+    {{- include "payment-app.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.auth.service.type }}
+  ports:
+    - port: {{ .Values.auth.service.port }}
+      targetPort: 8000
+      protocol: TCP
+      name: http
+  selector:
+    app: auth-service

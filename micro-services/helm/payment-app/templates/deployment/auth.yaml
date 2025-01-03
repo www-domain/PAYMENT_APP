@@ -1,0 +1,39 @@
+# Deployment configuration for Auth Service
+# has service inforamtion and deployment container configuration
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "payment-app.fullname" . }}-auth
+  labels:
+    {{- include "payment-app.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.auth.replicas | default 1 }}
+  selector:
+    matchLabels:
+      app: auth-service
+  template:
+    metadata:
+      labels:
+        app: auth-service
+    spec:
+      containers:
+      - name: auth-service
+        image: "{{ .Values.auth.image.repository }}:{{ .Values.auth.image.tag }}"
+        imagePullPolicy: {{ .Values.auth.image.pullPolicy }}
+        ports:
+        - containerPort: 8000
+        envFrom:
+        - configMapRef:
+            name: {{ include "payment-app.fullname" . }}-config
+        - secretRef:
+            name: {{ include "payment-app.fullname" . }}-secret
+        resources:
+          {{- toYaml .Values.auth.resources | nindent 12 }}
+        
+        volumeMounts:
+        - name: common-code
+          mountPath: /app/common
+      volumes:
+        - name: common-code
+          configMap:
+            name: {{ include "payment-app.fullname" . }}-common-code
