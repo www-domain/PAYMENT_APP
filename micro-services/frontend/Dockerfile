@@ -1,5 +1,5 @@
 # Build Stage
-FROM node:lts-alpine AS build
+FROM node:current-alpine AS build
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
