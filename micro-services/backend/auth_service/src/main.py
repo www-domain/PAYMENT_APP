@@ -1,11 +1,4 @@
 # backend/auth_service/src/main.py
-import sys
-import os
-
-
-# Add /app to the Python path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from .models import UserCreate, User, Token
