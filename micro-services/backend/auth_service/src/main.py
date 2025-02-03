@@ -2,9 +2,9 @@
 import sys
 import os
 
-# Add /app to the Python path
-sys.path.append('/app')
 
+# Add /app to the Python path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
